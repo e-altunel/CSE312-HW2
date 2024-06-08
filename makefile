@@ -1,9 +1,10 @@
 CC = g++
-CCFLAGS = -std=c++11 -Wall -Wextra -Werror -pedantic
+CCFLAGS = -std=c++17 -Wall -Wextra -Werror -pedantic
 RELEASE = -O2 -DNDEBUG $(CCFLAGS)
 DEBUG = -O0 -g $(CCFLAGS)
 AR = ar
 ARFLAGS = rcs
+MEMCHECK = valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -q
 
 
 SRCDIR = src
@@ -85,15 +86,19 @@ clean:
 
 fclean: clean
 	@rm -rf $(BINDIR)
+	@rm -f *.txt
+
+sclean: fclean
+	@rm -f *.dat
 
 run: $(MAINBIN)
 	@printf "${GREEN}Running $<...${NC}\n"
-	@./$(MAINBIN)
+	@$(MEMCHECK) ./$(MAINBIN)
 
 debugrun: $(DEBUGBIN)
 	@printf "${GREEN}Running $<...${NC}\n"
-	@./$(DEBUGBIN)
+	@$(MEMCHECK) ./$(DEBUGBIN)
 
 re: fclean all
 
-.PHONY: all debug clean fclean re run debugrun
+.PHONY: all debug clean fclean sclean re run debugrun 
