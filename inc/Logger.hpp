@@ -5,8 +5,14 @@
 #include <fstream>
 #include <iostream>
 
-namespace Logger
+namespace LoggerNS
 {
+enum class Spec
+{
+  START,
+  ENDL,
+  FLUSH
+};
 
 class Logger
 {
@@ -19,18 +25,12 @@ public:
     ERROR
   };
 
-  enum class Specials
-  {
-    START,
-    ENDL,
-    FLUSH
-  };
-
   static void setLogLevel (LogLevel level);
   static const Logger &getInstance (LogLevel level);
 
   static void setToConsole (bool toConsole);
   static void setFile (const std::string &file);
+  static void dropFile ();
 
   ~Logger ();
 
@@ -46,37 +46,34 @@ private:
   static std::ofstream g_file;
 
   static const char *get_styling (LogLevel level);
-
   static const char *reset_styling ();
-
   static const char *get_date ();
-
   static const char *get_name (LogLevel level);
 
 public:
   template <typename T> const Logger &operator<< (const T &t) const;
 
   const Logger &
-  operator<< (const Specials &special) const
+  operator<< (const Spec &special) const
   {
     if (m_logLevel >= g_logLevel)
     {
       switch (special)
       {
-      case Specials::START:
+      case Spec::START:
         if (g_toConsole)
           std::cout << get_styling (m_logLevel) << get_date ()
                     << get_name (m_logLevel) << reset_styling () << " ";
         if (g_toFile)
           g_file << get_date () << get_name (m_logLevel) << " ";
         break;
-      case Specials::ENDL:
+      case Spec::ENDL:
         if (g_toConsole)
           std::cout << std::endl;
         if (g_toFile)
           g_file << std::endl;
         break;
-      case Specials::FLUSH:
+      case Spec::FLUSH:
         if (g_toFile)
           g_file.flush ();
         break;
@@ -88,6 +85,14 @@ public:
   }
 };
 
+static const Logger &debugLogger
+    = Logger::getInstance (Logger::LogLevel::DEBUG);
+static const Logger &infoLogger = Logger::getInstance (Logger::LogLevel::INFO);
+static const Logger &warningLogger
+    = Logger::getInstance (Logger::LogLevel::WARNING);
+static const Logger &errorLogger
+    = Logger::getInstance (Logger::LogLevel::ERROR);
+
 template <typename T>
 const Logger &
 Logger::operator<< (const T &t) const
@@ -95,12 +100,9 @@ Logger::operator<< (const T &t) const
   if (m_logLevel >= g_logLevel)
   {
     if (g_toConsole)
-      std::cout << get_styling (m_logLevel) << t << reset_styling ();
+      std::cout << get_styling (m_logLevel) << reset_styling () << t;
     if (g_toFile)
-    {
       g_file << t;
-      g_file.flush ();
-    }
   }
   return *this;
 }

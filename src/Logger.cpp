@@ -1,7 +1,7 @@
 #include <Logger.hpp>
 #include <fstream>
 
-namespace Logger
+namespace LoggerNS
 {
 
 #ifndef NDEBUG
@@ -54,6 +54,8 @@ Logger::setToConsole (bool toConsole)
 void
 Logger::setFile (const std::string &file)
 {
+  dropFile ();
+
   g_file.open (file, std::ios::out | std::ios::app);
   if (g_file.is_open ())
     g_toFile = true;
@@ -61,14 +63,19 @@ Logger::setFile (const std::string &file)
   g_file << get_date () << " Log file opened" << std::endl;
 }
 
-Logger::~Logger ()
+void
+Logger::dropFile ()
 {
   if (g_toFile)
   {
     g_file << get_date () << " Log file closed" << std::endl << std::endl;
+    g_file.flush ();
     g_file.close ();
+    g_toFile = false;
   }
 }
+
+Logger::~Logger () { dropFile (); }
 
 const char *
 Logger::get_styling (LogLevel level)
