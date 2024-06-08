@@ -5,6 +5,10 @@
 #include <fstream>
 #include <iostream>
 
+#define FUNC_LOG()                                                            \
+  LoggerNS::infoLogger << LoggerNS::Spec::START << __PRETTY_FUNCTION__        \
+                       << LoggerNS::Spec::ENDL
+
 namespace LoggerNS
 {
 enum class Spec
