@@ -9,5 +9,6 @@ obj/
 *.exe
 *.out
 *.txt
+*.dat
 
 .vscode
